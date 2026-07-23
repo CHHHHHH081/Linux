@@ -30,3 +30,17 @@
 *.exe
 *.out
 *.app
+
+# 过滤掉不想要文件和文件夹
+*.exe
+*.sln
+*.vcxproj
+*.filters
+*.user
+*.suo
+*.db
+*.ipch
+Debug/
+.vs
+Release/
+x64/
