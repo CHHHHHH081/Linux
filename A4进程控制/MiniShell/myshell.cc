@@ -7,28 +7,43 @@
 #include <sys/wait.h>
 using namespace std;
 
+//1.命令行参数及个数
 const int basenum=1024;
 const int argvnum=64;
 char *gargv[argvnum];
 int gargc=0;
-//退出码
+
+//2.环境变量表
+const int envnum=64;
+char *genv[envnum];
+int genvs=0;
+
+//当前工作目录
+const int cwdlen=1024;
+char cwd[cwdlen];
+
+//上一次退出码
 int lastcode=0;
 
 string GetUserName()
 {
-    char* username=getenv("USER");
+    const char* username=getenv("USER");
     return (username!=nullptr&&username[0]!='\0')?username:"none";
 }
 
 string GetLogName()
 {
-    char* logname=getenv("LOGNAME");
+    const char* logname=getenv("LOGNAME");
     return (logname!=nullptr&&logname[0]!='\0')?logname:"none";
 }
 
 string GetPWD()
 {
-    char* pwd=getenv("PWD");
+    const char* pwd=getcwd(cwd,sizeof(cwd));
+    if(pwd!=NULL)
+    {
+        setenv("PWD",pwd,1);
+    }
     return (pwd!=nullptr&&pwd[0]!='\0')?pwd:"none";
 }
 
@@ -78,6 +93,68 @@ void test()
     }
 }
 
+void cd()
+{
+    if(gargc==1||!strcmp(gargv[1],"~"))
+    {
+        //家目录
+        if(chdir(getenv("HOME"))==-1)
+            perror("cd");
+    }
+    else
+    {
+        if(chdir(gargv[1])==-1)
+            perror("cd");
+    }
+}
+
+void echo()
+{
+    if(gargc==1)
+    {
+        printf("\n");
+        return;
+    }
+    char *ret=gargv[1];
+    if(ret[0]=='$')
+    {
+        if(ret[1]==0)
+            printf("$\n");
+        else if(!strcmp(ret,"$?"))
+            printf("%d\n",lastcode);
+        else
+        {
+            char *en=getenv(&ret[1]);
+            if(en==NULL)
+                printf("\n");
+            else
+                printf("%s\n",en);
+        }
+    }
+    else
+        printf("%s\n",ret);
+}
+
+//4.1判断并执行内建命令
+bool CheckAndExe()
+{
+    //输入为空，直接进入下一轮循环
+    if(gargc==0) return true;
+    char *cmd=gargv[0];
+    if(!strcmp(cmd,"cd"))
+    {
+        cd();
+        return true;
+    }
+    else if(!strcmp(cmd,"echo"))
+    {
+        echo();
+        return true;
+    }
+    return false;
+}
+
+//4.2执行命令
 bool ExecuteCmd()
 {
     pid_t id=fork();
@@ -92,28 +169,52 @@ bool ExecuteCmd()
     pid_t rid=waitpid(id,&status,0);
     if(rid>0)
     {
-        if(WIFEXITED(status))
-        {
-            lastcode=WEXITSTATUS(status);
-        }
-        else
-        {
-            rid=100;
-        }
-        return true;
+        lastcode=WIFEXITED(status);
     }
     return false;
 }
 
+void InitEnv()
+{
+    extern char **environ;
+    memset(genv,0,sizeof(genv));
+    genvs=0;
+    for(int i=0;environ[i];i++)
+    {
+        genv[i]=(char*)malloc(strlen(environ[i])+1);
+        if(genv[i]==NULL)
+            perror("malloc fail!");
+        strcpy(genv[i],environ[i]);
+        genvs++;
+    }
+    genv[genvs]=NULL;
+    for(int i=0;genv[i];i++)
+    {
+        putenv(genv[i]);
+    }
+    environ=genv;
+}
+
 int main()
 {
+    InitEnv();
     char CmdBuffer[basenum];
     while(1)
     {
+        //1.打印命令行提示符
         PrintCommandLine();
+        //2.获取用户命令，如果没有输入则继续下一行
         if(!GetCmd(CmdBuffer,basenum))
             continue;
+        //用户命令存在CmdBuffer中
+        //3.分析用户命令
         ParseCmdLine(CmdBuffer);
+        //命令行参数存在gargv中
+        //4.1判断是否为内建命令，是就执行然后下一轮循环
+        //不是就为普通命令
+        if(CheckAndExe())
+            continue;
+        //4.2执行命令
         ExecuteCmd();
     }
     return 0;
