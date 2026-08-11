@@ -69,6 +69,8 @@ but output is always appended to the end of the file.
 
 # 三、系统IO
 
+## 1.接口
+
 ```c
 int open(const char *pathname, int flags);
 int open(const char *pathname, int flags, mode_t mode);
@@ -94,7 +96,7 @@ int open(const char *pathname, int flags, mode_t mode);
 
 **`ssize_t read(int fd, void *buf, size_t count);`**读数据。读取成功返回文件大小，失败返回小于0。
 
-***
+## 2.文件描述符
 
 打开成功时，`open`的返回值`fd`一定大于等于0。**其中`fd`0、1、2三者为标准输入、标准输出、标准错误。**
 
@@ -107,3 +109,27 @@ int open(const char *pathname, int flags, mode_t mode);
 为什么这样设计`FILE`呢？
 
 `FILE`中封装了各个系统的文件标识符，根据平台条件编译，使代码具备可移植性。
+
+***
+
+![image-20260811134209836](./assets/image-20260811134209836.png)
+
+## 3.重定向原理
+
+文件描述符分配原则：最小的，没有被使用的，作为最新的`fd`分配给用户。
+
+```c
+close(1);
+int fd=open("log.txt",O_CREAT | O_WRONLY | O_TRUNC, 0666);
+printf("fd: %d\n",fd);
+```
+
+随后，原本应该打印到显示器上的信息`fd: 1`被打印到了`log.txt`文件中
+
+![image-20260811134940449](./assets/image-20260811134940449.png)
+
+因为OS只认`fd`，`printf`打印`fd=1`的文件中，该文件原本是标准输出，现在是`log.txt`。
+
+`int dup2(int oldfd, int newfd);`重定向系统调用。——将`oldfd`的`file`拷贝到`newfd`的位置，即`newfd`指向`oldfd`。
+
+重定向=打开方式+`dup2`。
