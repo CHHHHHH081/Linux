@@ -4,7 +4,12 @@
 #include <cstdlib>
 #include <string>
 #include <cstring>
+#include <cctype>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 using namespace std;
 
 //1.命令行参数及个数
@@ -24,6 +29,14 @@ char cwd[cwdlen];
 
 //上一次退出码
 int lastcode=0;
+
+//重定向
+#define NONE_REDIR 0
+#define INPUT_REDIR 1
+#define OUTPUT_REDIR 2
+#define APPEND_REDIR 3
+int redir=NONE_REDIR;
+string filename;
 
 string GetUserName()
 {
@@ -162,6 +175,28 @@ bool ExecuteCmd()
     if(id==0)
     {
         //子进程
+        
+        if(redir==INPUT_REDIR)
+        {
+            int fd=open(filename.c_str(),O_RDONLY);
+            if(fd<0) exit(2);
+            dup2(fd,0);
+            close(fd);
+        }
+        else if(redir==OUTPUT_REDIR)
+        {
+            int fd=open(filename.c_str(),O_CREAT|O_WRONLY|O_TRUNC,0666);
+            if(fd<0) exit(3);
+            dup2(fd,1);
+            close(fd);
+        }
+        else if(redir==APPEND_REDIR)
+        {
+            int fd=open(filename.c_str(),O_CREAT|O_WRONLY,0666);
+            if(fd<0) exit(4);
+            dup2(fd,1);
+            close(fd);
+        }
         execvp(gargv[0],gargv);
         exit(1);
     }
@@ -195,9 +230,54 @@ void InitEnv()
     environ=genv;
 }
 
+void Trimspace(const char cmd[],int &pos)
+{
+    while(isspace(cmd[pos]))
+    {
+        pos++;
+    }
+}
+
+void RedirCheck(const char *cmd)
+{
+    redir=NONE_REDIR;
+    filename.clear();
+    int start=0;
+    int end=strlen(cmd)-1;
+    while(end>start)
+    {
+        if(cmd[end]=='<')
+        {
+            redir=INPUT_REDIR;
+            end++;
+            Trimspace(cmd,end);
+            filename=cmd+end;
+            break;
+        }
+        else if(cmd[end]=='>')
+        {
+            if(cmd[end-1]=='>')
+            {
+                redir=OUTPUT_REDIR;
+            }
+            else
+            {
+                redir=APPEND_REDIR;
+            }
+            end++;
+            Trimspace(cmd,end);
+            filename=cmd+end;
+            break;
+        }
+        else
+            end--;
+    }
+}
+
 int main()
 {
     InitEnv();
+    umask(0);
     char CmdBuffer[basenum];
     while(1)
     {
@@ -207,6 +287,8 @@ int main()
         if(!GetCmd(CmdBuffer,basenum))
             continue;
         //用户命令存在CmdBuffer中
+        //重定向分析
+        RedirCheck(CmdBuffer);
         //3.分析用户命令
         ParseCmdLine(CmdBuffer);
         //命令行参数存在gargv中
