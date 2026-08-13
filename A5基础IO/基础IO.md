@@ -174,4 +174,42 @@ printf("fd: %d\n",fd);
 
 OS的刷新方案由OS自主决定。把数据交给OS，就相当于交给了硬件，==**其本质就是拷贝**==。
 
-![image-20260812192653104](./assets/image-20260812192653104.png)
+![image-20260813143601708](./assets/image-20260813143601708.png)
+
+```c
+// 库函数
+printf("hello printf\n");
+fprintf(stdout, "hello fprintf\n");
+const char *s = "hello fwrite\n";
+fwrite(s, strlen(s), 1, stdout);
+
+// 系统调用
+const char *ss = "hello write\n";
+write(1, ss, strlen(ss));
+
+//???
+fork();
+```
+
+```bash
+$ ./a.out
+hello printf
+hello fprintf
+hello fwrite
+hello write
+
+$ ./a.out > log.txt
+$ cat log.txt
+hello write
+hello printf
+hello fprintf
+hello fwrite
+hello printf
+hello fprintf
+hello fwrite
+```
+
+重定向不仅仅改变了文件，同时还改变了文件的刷新方式，**向显示器打印为行刷新，向普通文件打印为全刷新。**从而导致库函数的三条信息没有马上刷新。
+
+最后`fork()`，产生子进程，父子进程退出都要刷新缓冲区，使库函数的内容刷新了两次。
+
