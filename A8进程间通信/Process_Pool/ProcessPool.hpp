@@ -149,6 +149,7 @@ public:
             {
                 // 子进程，读
                 close(pipefd[1]);
+                _cm.CloseW();
                 Work(pipefd[0]);
                 close(pipefd[0]);
                 exit(0);
