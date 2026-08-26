@@ -22,7 +22,8 @@ int main()
         if (t > 0)
         {
             buf[t] = 0;
-            std::cout << "client says: " << buf << std::endl;
+            std::cout << "client says: " << buf << std::endl
+                      << std::flush;
         }
     }
     close(fd);
