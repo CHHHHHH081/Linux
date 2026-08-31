@@ -11,6 +11,8 @@
 #include <sys/shm.h>
 
 #define PATH "."
+#define CREATOR "creator"
+#define USER "user"
 
 const int gsize = 4096;
 const int gproj_id = 0;
@@ -37,11 +39,6 @@ private:
         printf("Create/Get success! _shmid: %d\n", _shmid);
     }
 
-public:
-    shm() : _size(gsize), _shmid(gdefaultid), _start_mem(nullptr)
-    {
-    }
-
     void Create()
     {
         Createhelper(IPC_CREAT | IPC_EXCL);
@@ -60,13 +57,7 @@ public:
             perror("shmat fail!\n");
             exit(1);
         }
-        printf("shmat success, VirtualAddr: %p", _start_mem);
-    }
-
-    void *VirtualAddr()
-    {
-        printf("VirtualAddr: %p\n", _start_mem);
-        return _start_mem;
+        printf("shmat success, VirtualAddr: %p\n", _start_mem);
     }
 
     void Destroy()
@@ -84,6 +75,31 @@ public:
         }
     }
 
+public:
+    shm(std::string username)
+        : _size(gsize),
+          _shmid(gdefaultid),
+          _start_mem(nullptr),
+          _username(username)
+    {
+        if (_username == USER)
+            Get();
+        else if (_username == CREATOR)
+            Create();
+        else
+        {
+            perror("Invalid username!\n");
+            exit(1);
+        }
+        Attach();
+    }
+
+    void *VirtualAddr()
+    {
+        printf("VirtualAddr: %p\n", _start_mem);
+        return _start_mem;
+    }
+
     ~shm()
     {
         Destroy();
@@ -94,4 +110,5 @@ private:
     void *_start_mem;
     int _shmid;
     int _size;
+    std::string _username;
 };
