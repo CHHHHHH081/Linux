@@ -26,7 +26,7 @@
 //     td.join();
 // }
 
-int n = 0;
+static int n = 0;
 
 void routine(int &n)
 {
