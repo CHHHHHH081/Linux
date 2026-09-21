@@ -6,17 +6,17 @@
 
 void DownloadTask()
 {
-    std::cout << "这是一个下载的任务" << std::endl;
+    std::cout << "这是一个下载的任务......" << std::endl;
 }
 
 void UploadTask()
 {
-    std::cout << "这是一个上传的任务" << std::endl;
+    std::cout << "这是一个上传的任务......" << std::endl;
 }
 
 void SQLTask()
 {
-    std::cout << "这是一个关于SQL的任务" << std::endl;
+    std::cout << "这是一个关于SQL的任务......" << std::endl;
 }
 
 using task_t = std::function<void(void)>;

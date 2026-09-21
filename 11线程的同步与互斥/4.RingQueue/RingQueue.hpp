@@ -24,31 +24,15 @@ public:
         _rq.reserve(cap);
     }
 
-    // 右值
-    void EnQueue(T &&in)
-    {
-        // 生产者将任务入队
-        _blank_sem.P();
-        {
-            LockGuard ld(_p_mutex);
-            // std::cout << "生产者生产了一个任务 " << in << std::endl;
-            std::cout << "生产者生产了一个任务 " << std::endl;
-            _rq[_p_step] = in;
-            _p_step++;
-            _p_step %= _cap;
-            _data_sem.V();
-        }
-    }
-
     // 左值
-    void EnQueue(T &in)
+    void EnQueue(const T &in)
     {
         // 生产者将任务入队
         _blank_sem.P();
         {
             LockGuard ld(_p_mutex);
             // std::cout << "生产者生产了一个任务 " << in << std::endl;
-            std::cout << "生产者生产了一个任务 " << std::endl;
+            std::cout << "生产者生产了一个任务" << std::endl;
             _rq[_p_step] = in;
             _p_step++;
             _p_step %= _cap;
@@ -63,7 +47,7 @@ public:
         _data_sem.P();
         {
             LockGuard ld(_c_mutex);
-            std::cout << "消费者消费一个任务" << std::endl;
+            std::cout << "消费者消费一个任务: " << std::endl;
             *out = _rq[_c_step];
             _c_step++;
             _c_step %= _cap;
@@ -78,7 +62,7 @@ public:
         _data_sem.P();
         {
             LockGuard ld(_c_mutex);
-            std::cout << "消费者消费一个任务" << std::endl;
+            std::cout << "消费者消费一个任务: " << std::endl;
             _c_step++;
             _c_step %= _cap;
             _blank_sem.V();
