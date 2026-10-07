@@ -1,5 +1,4 @@
-#ifndef __LOG_HPP
-#define __LOG_HPP
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -186,5 +185,3 @@ namespace LogModule
 #define Enable_Console_Stretage() logger.EnableConsoleStretage()
 #define Enable_File_Stretage() logger.EnableFileStretage()
 }
-
-#endif

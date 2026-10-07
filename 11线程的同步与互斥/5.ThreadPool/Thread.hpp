@@ -9,27 +9,26 @@
 #include <cstdlib>
 #include <cstdio>
 
-namespace Thread
+namespace ThreadModule
 {
     static int num = 1;
-    template <typename T>
     class thread
     {
-        using func_t = std::function<void(T &)>;
+        using func_t = std::function<void()>;
 
     private:
         static void *routine(void *args)
         {
-            thread<T> *thd = static_cast<thread<T> *>(args);
+            thread *thd = static_cast<thread *>(args);
             thd->_isrunning = true;
-            thd->_func(thd->_data);
+            thd->_func(); // 回调
             return nullptr;
         }
 
         void EnableDetach() { _joinable = false; }
 
     public:
-        thread(func_t func, T &data) : _func(func), _data(data), _joinable(true)
+        thread(func_t func) : _func(func), _joinable(true)
         {
             _name = "Thread-" + std::to_string(num++);
             _pid = getpid();
@@ -138,7 +137,6 @@ namespace Thread
         std::string _name;
         bool _joinable;
         bool _isrunning;
-        T &_data;
         void *ret;
         func_t _func;
     };
