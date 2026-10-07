@@ -41,6 +41,22 @@ namespace ThreadPoolModule
             }
         }
 
+        static threadpool *GetInstance()
+        {
+            if (inc == nullptr)
+            {
+                LockGuard lg(_lock);
+                LOG(Loglevel::NORMAL) << "获取单例...";
+                if (inc == nullptr)
+                {
+                    LOG(Loglevel::NORMAL) << "首次使用单例, 创建单例...";
+                    inc = new threadpool<T>();
+                    inc->Start();
+                }
+            }
+            return inc;
+        }
+
         void HandlerTask()
         {
             char name[128];
@@ -78,7 +94,7 @@ namespace ThreadPoolModule
             for (thread &thread : _threads)
             {
                 thread.Start();
-                LOG(Loglevel::NORMAL) << "线程 " << thread << " 已启动";
+                LOG(Loglevel::NORMAL) << "线程 " << thread.name() << " 已启动";
             }
         }
 
@@ -92,6 +108,7 @@ namespace ThreadPoolModule
             }
             _taskq.push(in);
             WakeUpOne();
+            return true;
         }
 
         void Stop()
@@ -118,5 +135,14 @@ namespace ThreadPoolModule
         int _sleeper_num;
         Mutex _mutex;
         Cond _cond;
+
+        static threadpool<T> *inc;
+        static Mutex _lock;
     };
+
+    template <typename T>
+    threadpool<T> *threadpool<T>::inc = nullptr;
+
+    template <typename T>
+    Mutex threadpool<T>::_lock;
 }
