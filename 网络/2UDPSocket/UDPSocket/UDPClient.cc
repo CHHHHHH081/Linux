@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         std::string input;
         std::cout << "Please Enter# ";
         std::getline(std::cin, input);
-        ssize_t n = sendto(sockfd, input.c_str(), sizeof(input), 0, (struct sockaddr *)&server, sizeof(server));
+        ssize_t n = sendto(sockfd, input.c_str(), input.size(), 0, (struct sockaddr *)&server, sizeof(server));
         if (n < 0)
         {
             LOG(Loglevel::ERROR) << "client send error!";
