@@ -51,7 +51,7 @@ struct in_addr { uint32_t s_addr; };   // 32 位 IP
 - **IP 地址（sin_addr）**：内部包含一个 32 位无符号整数，表示 IPv4 地址。
 - **填充物（sin_zero）**：填充 8 个字节，保证整个 `struct sockaddr_in` 结构体的大小与通用的 `struct sockaddr`（14字节地址数据 + 2字节类型）相契合。
 
-## 4. 字节序 + IP地址转换
+## 4. 字节序 + IP地址转换 + bind
 
 **端口：`htons` / `ntohs`**
 
@@ -75,6 +75,12 @@ in_addr_t inet_addr(const char *cp);
 
 ```c
 char *inet_ntoa(struct in_addr in);
+```
+
+**`bind`绑定：**
+
+```c
+int bind(int sockfd, const struct sockaddr *addr,socklen_t addrlen);
 ```
 
 ## 5. 数据接收与响应处理：recvfrom
@@ -116,7 +122,7 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 
 ## 1. 服务端
 
-### 创建socket并绑定ip:port​
+### 创建socket并bind绑定ip:port​
 
 中间需要利用`bzero`函数清零结构体。
 
@@ -193,13 +199,13 @@ client 要不要进行 bind？**一定要 bind 的！但是不需要显式 bind*
 
 ```cpp
 struct sockaddr_in server;
-memset(&server, 0, sizeof(server));
+bzero(&server,sizeof(server));
 server.sin_family      = AF_INET;
 server.sin_port        = htons(server_port);
 server.sin_addr.s_addr = inet_addr(server_ip.c_str());
 ```
 
-注意：这里填的是**服务端的** `ip:port`，不是自己的。这就是客户端唯一需要「指定地址」的地方。
+注意：这里填的是**服务端的** `ip:port`，不是自己的，首先要通过argv拿到server端socket，才能填充。这就是客户端唯一需要「指定地址」的地方。
 
 ### 循环收发
 
@@ -208,8 +214,7 @@ while (true)
 {
     std::string input;
     std::cout << "Please Enter# ";
-    if (!std::getline(std::cin, input)) break;      // Ctrl+D 退出
-    if (input == "quit") break;
+    std::getline(std::cin, input);
 
     // 发送（首次 sendto 时 OS 自动 bind 本地随机端口）
     ssize_t n = sendto(sockfd, input.c_str(), input.size(), 0,
