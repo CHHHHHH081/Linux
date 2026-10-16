@@ -256,3 +256,28 @@ local.sin_addr.s_addr = INADDR_ANY; // 自动转换为网络字节序的全 0
 
 当我们绑定之后，在内核中，该被绑定的IP变为`0.0.0.0`，即接受任意IP访问。
 
+## 附：其余API
+
+这里介绍两个现代网络编程常用的API：
+
+```c
+// 字符串 IP -> 二进制网络字节序 IP
+int inet_pton(int af, const char *src, void *dst);
+
+// 二进制网络字节序 IP -> 字符串 IP
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
+```
+
+**支持协议族**：第一个参数 `af` 可显式指定 `AF_INET` (IPv4) 或 `AF_INET6` (IPv6)。
+
+**绝对线程安全**：`inet_ntop` 要求调用者**显式传入一个由调用方维护的内存缓冲区指针**（如栈上分配的 `char ipbuffer[64]`），避免了内部静态缓冲区的依赖，每个线程在自己的栈帧空间中操作，从根本上消除了线程安全隐患。
+
+### 关于inet_ntoa
+
+```c
+char *inet_ntoa(struct in_addr in);
+```
+
+`inet_ntoa` 内部使用了一个**静态局部缓冲区（static buffer）**来保存转换后的字符串。在**多线程并发等==多次调用该接口==的环境下**，如果多个线程同时调用 `inet_ntoa`，后续线程的转换结果会覆盖之前线程缓存在静态区中的 IP 字符串，引发严重的并发数据竞争问题。
+
+因此它有上位替代：`inet_ntop`。
