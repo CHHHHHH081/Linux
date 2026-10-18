@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "Common.hpp"
 
 class InetAddr
 {
@@ -14,7 +15,7 @@ public:
         : _addr(addr)
     {
         char ipbuffer[64];
-        inet_ntop(AF_INET, &_addr.sin_addr, ipbuffer, sizeof(ipbuffer));
+        inet_ntop(AF_INET, &_addr.sin_addr, ipbuffer, sizeof(_addr));
         _ip = ipbuffer;
         _port = ntohs(addr.sin_port);
         _addrstring = _ip + ":" + std::to_string(_port);
@@ -36,6 +37,7 @@ public:
         _addr.sin_port = htons(port);
     }
 
+    struct sockaddr *NetAddrPtr() { return CONV(_addr); }
     socklen_t NetAddrlen() { return sizeof(_addr); }
     std::string IP() const { return _ip; }
     uint16_t Port() const { return _port; }

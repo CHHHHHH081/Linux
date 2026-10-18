@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string>
 #include <cstring>
+#include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
@@ -15,7 +16,10 @@ enum ExitCode
     USAGE_ERR,
     SOCKET_ERR,
     BIND_ERR,
-    LISTEN_ERR
+    LISTEN_ERR,
+    READ_ERR,
+    FORK_ERR,
+    CONNECT_ERR
 };
 
 class NoCopy

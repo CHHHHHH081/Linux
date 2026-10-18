@@ -1,0 +1,9 @@
+[2026-10-18 10:50:55][ERROR][349910][TCPServer.hpp][29] - bind err
+[2026-10-18 10:53:01][ERROR][350756][TCPServer.hpp][29] - bind err
+[2026-10-18 10:53:03][ERROR][350790][TCPServer.hpp][29] - bind err
+[2026-10-18 10:53:03][ERROR][350794][TCPServer.hpp][29] - bind err
+[2026-10-18 10:53:04][ERROR][350797][TCPServer.hpp][29] - bind err
+[2026-10-18 10:53:04][ERROR][350814][TCPServer.hpp][29] - bind err
+[2026-10-18 10:53:07][ERROR][350837][TCPServer.hpp][29] - bind err
+[2026-10-18 20:41:50][INFO][489743][TCPClient.cc][53] - 已退出...
+[2026-10-18 20:41:50][ERROR][489743][TCPClient.cc][48] - read fail

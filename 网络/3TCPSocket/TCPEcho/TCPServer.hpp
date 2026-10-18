@@ -2,9 +2,10 @@
 #include "InetAddr.hpp"
 #include "log.hpp"
 #include "Common.hpp"
+#include "threadpool.hpp"
 
 using namespace LogModule;
-using func_t = std::function<void()>;
+using func_t = std::function<std::string(std::string, InetAddr)>;
 
 class TCPServer : public NoCopy
 {
@@ -23,7 +24,7 @@ public:
             exit(SOCKET_ERR);
         }
         InetAddr addr(_port);
-        int n = bind(n, CONV(addr), addr.NetAddrlen());
+        int n = bind(_listensockfd, CONV(addr), addr.NetAddrlen());
         if (n < 0)
         {
             LOG(Loglevel::ERROR) << "bind err";
@@ -35,34 +36,101 @@ public:
             LOG(Loglevel::ERROR) << "listen err";
             exit(LISTEN_ERR);
         }
+        LOG(Loglevel::INFO) << "listen success";
+    }
+
+    class ThreadData
+    {
+    public:
+        ThreadData(int sockfd, InetAddr addr, TCPServer *tsvr)
+            : _sockfd(sockfd), _addr(addr), _tsvr(tsvr)
+        {
+        }
+        int _sockfd;
+        InetAddr _addr;
+        TCPServer *_tsvr;
+    };
+
+    void Service(int sockfd, InetAddr peer)
+    {
+        while (1)
+        {
+            char buf[1024];
+            int n = read(sockfd, buf, sizeof(buf) - 1);
+            if (n < 0)
+            {
+                LOG(Loglevel::ERROR) << "读取失败";
+                exit(READ_ERR);
+            }
+            else if (n == 0)
+            {
+                LOG(Loglevel::INFO) << peer.AddrString() << "已退出...";
+                close(sockfd);
+            }
+            buf[n] = 0;
+            std::string ret = _func(std::string(buf), peer);
+            LOG(Loglevel::INFO) << peer.AddrString() << "# " << ret;
+            write(sockfd, ret.c_str(), ret.size());
+        }
+    }
+
+    static void *Routine(void *args)
+    {
+        pthread_detach(pthread_self());
+        ThreadData *td = static_cast<ThreadData *>(args);
+        td->_tsvr->Service(td->_sockfd, td->_addr);
+        delete td;
+        return nullptr;
     }
 
     void Start()
     {
         _isrunning = true;
-        while (1)
+        while (_isrunning)
         {
             struct sockaddr_in peer;
             socklen_t len = sizeof(peer);
-            _sockfd = accept(_listensockfd, CONV(peer), &len);
-            if (_sockfd < 0)
+            InetAddr addr(peer);
+            // 获取连接, 没有就阻塞
+            int sockfd = accept(_listensockfd, addr.NetAddrPtr(), &len);
+            if (sockfd < 0)
             {
                 LOG(Loglevel::WARNING) << "获取连接失败, 尝试再次获取";
                 continue;
             }
-            char buf[1024];
-            int n = read(_sockfd, buf, sizeof(buf) - 1);
-            if (n < 0)
-            {
-                LOG(Loglevel::ERROR) << "读取失败";
-            }
-            else if (n == 0)
-            {
-            }
-            buf[n] = 0;
-            LOG(Loglevel::INFO) << buf;
-            write(_sockfd, buf, n);
+            LOG(Loglevel::INFO) << "获取连接成功";
+
+            // 进程版
+            //  int n = fork();
+            //  if (n < 0)
+            //  {
+            //      LOG(Loglevel::ERROR) << "fork err";
+            //      exit(FORK_ERR);
+            //  }
+            //  else if (n == 0)
+            //  {
+            //      // 子进程
+            //      close(_listensockfd); // 子进程不再使用listen套接字
+            //      if (fork() > 0)
+            //          exit(OK);
+            //      // 孙子进程
+            //      Service(sockfd, addr);
+            //      exit(OK);
+            //  }
+            //  else
+            //  {
+            //      // 父进程
+            //      close(sockfd);
+            //      pid_t pid = waitpid(n, nullptr, 0);
+            //      (void)pid;
+            //  }
+
+            // 多线程版
+            ThreadData *td = new ThreadData(sockfd, addr, this);
+            pthread_t tid;
+            pthread_create(&tid, nullptr, Routine, td);
         }
+        _isrunning = false;
     }
 
 private:
@@ -70,5 +138,4 @@ private:
     func_t _func;
     bool _isrunning;
     int _listensockfd; // 监听套接字描述符
-    int _sockfd;       // 用于读写
 };
