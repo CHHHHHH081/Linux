@@ -52,6 +52,7 @@ int main(int argc, const char *argv[])
         {
             LOG(Loglevel::INFO) << addr.AddrString() << "已退出...";
             close(sockfd);
+            return 0;
         }
         else
         {

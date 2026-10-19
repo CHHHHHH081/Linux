@@ -1,5 +1,5 @@
 #include "TCPServer.hpp"
-#include "dict.hpp"
+#include "Command.hpp"
 #include <memory>
 
 void Usage()
@@ -18,10 +18,9 @@ int main(int argc, char *argv[])
     if (argc != 2)
         Usage();
     uint16_t port = std::stoi(argv[1]);
-    dict dict;
-    dict.LoadDict();
-    std::unique_ptr<TCPServer> tcp = std::make_unique<TCPServer>(port, [&dict](std::string eng, InetAddr peer) -> std::string
-                                                                 { return dict.Translate(eng, peer); });
+    Command Cmds;
+    std::unique_ptr<TCPServer> tcp = std::make_unique<TCPServer>(port, [&Cmds](std::string cmd, InetAddr peer) -> std::string
+                                                                 { return Cmds.Execute(cmd, peer); });
     tcp->Init();
     tcp->Start();
     return 0;

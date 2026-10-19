@@ -60,12 +60,13 @@ public:
             if (n < 0)
             {
                 LOG(Loglevel::ERROR) << "读取失败";
-                exit(READ_ERR);
+                return;
             }
             else if (n == 0)
             {
                 LOG(Loglevel::INFO) << peer.AddrString() << "已退出...";
                 close(sockfd);
+                return;
             }
             buf[n] = 0;
             std::string ret = _func(std::string(buf), peer);
@@ -90,14 +91,14 @@ public:
         {
             struct sockaddr_in peer;
             socklen_t len = sizeof(peer);
-            InetAddr addr(peer);
             // 获取连接, 没有就阻塞
-            int sockfd = accept(_listensockfd, addr.NetAddrPtr(), &len);
+            int sockfd = accept(_listensockfd, CONV(peer), &len);
             if (sockfd < 0)
             {
                 LOG(Loglevel::WARNING) << "获取连接失败, 尝试再次获取";
                 continue;
             }
+            InetAddr addr(peer);
             LOG(Loglevel::INFO) << "获取连接成功";
 
             // 进程版
