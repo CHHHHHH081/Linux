@@ -1,37 +1,124 @@
-# Linux
+# Linux 学习笔记
 
-#### 介绍
-这是在学习Linux过程中的一些代码
+[English](README.en.md) | 简体中文
 
-#### 软件架构
-软件架构说明
+![笔记](https://img.shields.io/badge/笔记-中文-blue)
+![语言](https://img.shields.io/badge/代码-C++-00599C++?logo=c++&logoColor=white)
+![平台](https://img.shields.io/badge/平台-Linux-FCC624?logo=linux&logoColor=black)
 
+一份边学边写的 Linux 系统编程笔记：从权限、开发工具这些“日常操作”入手，一路走到进程、基础 IO、文件系统、信号与线程，再到目前仍在完善中的网络编程。
 
-#### 安装教程
+每一章都是一篇独立的 Markdown 笔记，配了图解和可运行的 C 示例；示例代码放在对应章节目录下，多数带有 `Makefile`，`make` 即可编译。笔记中的图片统一放在各章的 `assets/` 目录，正文以相对路径引用，克隆下来就能离线阅读。
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+> 笔记是个人理解与课堂内容的整理，行文偏口语，个别结论可能不够严谨。发现错误欢迎提 Issue 或 PR 指正。
 
-#### 使用说明
+## 目录结构
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```text
+Linux/
+├── 系统/
+│   ├── 1权限/
+│   ├── 2开发工具/
+│   │   └── ProgressBar/
+│   ├── 3进程/
+│   │   ├── ALLENV/
+│   │   ├── ONLY/
+│   │   └── zombie/
+│   ├── 4进程控制/
+│   │   └── testforexe/
+│   ├── 5基础IO/
+│   ├── 6Ext系列文件系统/
+│   ├── 7库的制作与原理/
+│   │   ├── main/
+│   │   └── testelf/
+│   ├── 8进程间通信/
+│   ├── 9Linux进程信号/
+│   ├── 10线程概念及控制/
+│   └── 11线程的同步与互斥/
+├── 网络/
+│   ├── 1网络基础/
+│   ├── 2UDPSocket/
+│   └── 3TCPSocket/
+├── README.md
+└── README.en.md
+```
 
-#### 参与贡献
+每个章节目录下有一篇 Markdown 笔记；多数章节配有 `assets/` 图片目录，部分章节还带有示例代码子目录。各章的具体内容和代码说明见下面的索引表。
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+## 内容索引
 
+### 系统编程
 
-#### 特技
+| # | 笔记 | 主要内容 |
+| --- | --- | --- |
+| 1 | [权限](系统/1权限/权限.md) | `sudo` 与 `/etc/sudoers`、用户与权限位、`chmod`/`chown`/`chgrp`、缺省权限与 `umask`、目录权限与粘滞位 |
+| 2 | [开发工具](系统/2开发工具/开发工具.md) | 包管理器、`vim`、`gcc`/`g++`、静态库与动态库、`make`/`Makefile` 的依赖关系与变量、进度条程序 |
+| 3 | [进程概念](系统/3进程/进程概念.md) | 冯诺依曼体系与存储分级、操作系统的定位、进程概念/状态/优先级/切换、O(1) 调度、环境变量、程序地址空间与页表 |
+| 4 | [进程控制](系统/4进程控制/进程控制.md) | `fork` 与写时拷贝、`exit`/`_exit`、`wait`/`waitpid` 与退出码、程序替换与 `exec` 家族 |
+| 5 | [基础 IO](系统/5基础IO/基础IO.md) | 文件与文件描述符、C 标准 IO 与系统 IO、重定向原理、一切皆文件、用户态缓冲区 |
+| 6 | [Ext 系列文件系统](系统/6Ext系列文件系统/Ext系列文件系统.md) | 磁盘物理结构、CHS 与 LBA、块与块组、inode、目录与 dentry、挂载、软链接与硬链接 |
+| 7 | [库的制作与原理](系统/7库的制作与原理/库的制作与原理.md) | 静态库与动态库的制作/使用、目标文件、ELF 格式、静态链接与动态链接、库的加载 |
+| 8 | [进程间通信](系统/8进程间通信/进程间通信.md) | 匿名管道与进程池、命名管道、System V 共享内存/消息队列/信号量、内核组织 IPC 的方式。另附 [复习提纲](系统/8进程间通信/00_复习提纲.md) 与 [总览](系统/8进程间通信/01_IPC总览.md)、[管道与 FIFO](系统/8进程间通信/02_管道与FIFO.md)、[消息队列与共享内存](系统/8进程间通信/03_消息队列与共享内存.md)、[选择与实践](系统/8进程间通信/04_选择与实践.md) 四篇速查 |
+| 9 | [进程信号](系统/9Linux进程信号/进程信号.md) | 信号的产生（键盘/系统调用/硬件异常/软件条件）、信号的保存与 `sigset_t`、捕捉流程与用户态/内核态、可重入函数、`volatile`、`SIGCHLD` |
+| 10 | [线程概念及控制](系统/10线程概念及控制/线程概念及控制.md) | 分页式管理与页表、快表与缺页异常、线程与进程的对比、POSIX 线程接口、LWP 与 TCB、面向对象封装线程、线程局部存储 |
+| 11 | [线程的同步与互斥](系统/11线程的同步与互斥/线程的同步与互斥.md) | 互斥量与加锁原理、锁的封装、条件变量、生产者消费者模型、POSIX 信号量与环形队列、线程池 |
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+### 网络编程
+
+| # | 笔记 | 主要内容 | 状态 |
+| --- | --- | --- | --- |
+| 1 | [网络基础](网络/1网络基础/网络基础.md) | 协议分层与 OSI/TCP-IP 模型、局域网与跨网络传输流程、MAC 地址与 IP 地址、端口号、TCP 与 UDP 的特点、网络字节序、`sockaddr` 系列结构体 | 已完成 |
+| 2 | [UDP Socket](网络/2UDPSocket/UDPSocket.md) | `socket`/`bind`/`recvfrom`/`sendto`、`sockaddr_in` 的填充、服务端与客户端完整流程、客户端隐式 bind、`inet_ntoa` 等辅助接口 | 已完成 |
+| 3 | [TCP Socket](网络/3TCPSocket/TCPSocket.md) | `socket`/`bind`/`listen`/`accept`、监听与连接状态、全双工与字节流读写 | 编写中 |
+
+## 配套代码
+
+| 目录 | 说明 | 构建与运行 |
+| --- | --- | --- |
+| [ProgressBar](系统/2开发工具/ProgressBar) | 用 `\r` 回车刷新的动态进度条，演示行缓冲与刷新 | `make && ./progressbar` |
+| [ALLENV](系统/3进程/ALLENV) | 通过 `main` 的第三个参数遍历并打印全部环境变量 | `make && ./allenv` |
+| [ONLY](系统/3进程/ONLY) | 用 `getenv("USER")` 读取用户名并做校验 | `make && ./OnlyMe` |
+| [zombie](系统/3进程/zombie) | 子进程先退出、父进程不回收，复现僵尸进程 | `gcc test.c -o test && ./test`，另开终端用 `ps` 观察 |
+| [testforexe](系统/4进程控制/testforexe) | 子进程调用 `execl` 执行 `ls`，父进程 `waitpid` 等待 | `make && ./test` |
+| [main](系统/7库的制作与原理/main) | 静态库的制作、`ar` 打包与头文件安装 | `make` 生成 `libfile.a`；链接示例：`gcc main.c -Icfiles -L. -lfile -o main` |
+| [testelf](系统/7库的制作与原理/testelf) | 手工执行 `.c → .s → .o → 可执行文件`，对照 ELF 与进程地址空间 | 无 `Makefile`，按笔记中的命令分步执行 |
+
+> 编译线程相关示例时需要链接 POSIX 线程库，例如 `gcc demo.c -o demo -lpthread`（较新的 glibc 也接受 `-pthread`）。
+
+## 快速开始
+
+```bash
+git clone https://github.com/CHHHHHH081/Linux.git
+cd Linux
+```
+
+直接用支持 Markdown 的编辑器打开即可阅读，推荐在 VS Code 中配合 Markdown 预览。仓库里附带了一份 C/C++ 插件配置（[网络/.vscode/c_cpp_properties.json](网络/.vscode/c_cpp_properties.json)），按 Linux 下 `/usr/bin/gcc` 的路径编写，在别的机器上打开时按需调整。
+
+## 环境说明
+
+- **系统**：Linux（Ubuntu / CentOS 等发行版均可，笔记涉及的命令与系统调用是通用的）
+- **编译器**：`gcc` / `g++`，示例以 C 为主；进程间通信与线程封装两章用 C++ 类做过封装
+- **构建**：`make`（示例的 `Makefile` 使用了 `wildcard`、`%` 模式规则、`$@` / `$^` 等写法）
+- **调试与观察**：`gdb`、`ps`、`top`、`netstat`、`strace` 等
+- **线程库**：POSIX Threads（`-lpthread`）
+
+## 阅读建议
+
+1. 系统部分按 `1 → 11` 的顺序读，后面的内容依赖前面的概念（例如线程一章会大量复用进程的地址空间与页表知识）；只想查某个专题时，直接看该章开头的目录或提纲。
+2. 进程、文件系统、信号三章偏重“内核视角”，建议边读边在终端里跑配套代码，用 `ps`、`strace`、`/proc` 观察现象。
+3. 网络部分建议先读[网络基础](网络/1网络基础/网络基础.md)，把分层、MAC/IP/端口、字节序这些前置概念理顺，再看 UDP 与 TCP 的接口。
+4. 第 8 章的目录下另附[复习提纲](系统/8进程间通信/00_复习提纲.md)，适合作为自测清单。
+
+## 待办
+
+- [ ] 继续完善网络部分：补齐 TCP 的 `connect`、收发与服务器循环模型，并扩展多进程/多线程服务器、协议定制等章节
+- [ ] 修复 [进程概念](系统/3进程/进程概念.md) 中 17 张图片仍引用本机绝对路径（`D:/我的文档/...`）的问题，统一改到 `assets/` 下的相对路径，使其在 GitHub 上正常显示
+- [ ] 清理误提交的编译产物（`*.o`、`*.a`、`*.tgz`），并在 `.gitignore` 中补充相应规则
+- [ ] 统一各章格式：标题层级、代码块语言标注、图片说明
+- [ ] 补充开源许可证
+
+## 说明
+
+本仓库内容仅供学习交流。仓库暂未声明开源许可证；如需转载或引用笔记内容，请注明出处。
+
+欢迎通过 Issue 指出错误，或提交 PR 一起完善。
