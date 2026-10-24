@@ -73,3 +73,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 ## 5. 发送/接收数据
 
 **UDP** 是面向数据报的，具有特定的收发接口（如 **recvfrom/sendto**）；而 **TCP** 是面向字节流的，因此可以直接使用标准的 Linux 文件 I/O 系统调用 **read()** 与 **write()** 进行数据通信。
+
+# 二、基于C++的TCP C/S通信整体架构图
+
+![屏幕截图 2026-10-21 230001](./assets/屏幕截图 2026-10-21 230001.png)
